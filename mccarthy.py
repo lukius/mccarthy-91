@@ -38,3 +38,10 @@ def r(n, m, k, s, e):
     # The -1 term is because we do not count the first call; just recursive
     # calls are counted.
     return M_extended(n, m, k, s, e, 0)['calls'] - 1
+
+def S(n, m, k, s):
+    # Closed form solution for M(n, m, k, s, 2) (see pdf for derivation).
+    return n - s + (k-s) * max(0, round_up(m-n+1, k-s))
+
+def round_up(a, b):
+    return (a+b-1) // b

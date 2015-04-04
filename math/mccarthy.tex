@@ -26,6 +26,7 @@
 \newcommand{\Mi}[2]{\ensuremath{M^{#2}(#1)}}
 \newcommand{\Ind}[1]{\ensuremath{\mathbb{I}\{#1\}}}
 \newcommand{\Nat}{\ensuremath{\mathbb{N}}}
+\newcommand{\ceil}[1]{\ensuremath{\left\lceil #1 \right\rceil}}
 
 
 \begin{document}
@@ -122,10 +123,150 @@ $k = 11 = 1 \cdot 10 + 1 = (e - 1) \cdot s + 1$.
 
 \subsection{C\'alculo del valor de la funci\'on}
 
+Tal como puede verse, la funci\'on $M$ anida llamadas en las que incrementa una y otra vez en $k$ el argumento, para
+eventualmente decrementarlo por $s$ cada vez que se supera el umbral $m$. Por este motivo, se puede concluir que
+
+$$M(n) = n + \alpha_n k - \beta_n s$$
+
+para algunos $\alpha_n, \beta_n \in \Nat$. Ahora bien, de cada $e$ llamadas, una de ellas hace el incremento en $k$. Esto
+implica que $\alpha_n = r(n) / e$, siendo $r(n)$ la cantidad de llamadas recursivas efectuadas al computar
+$M(n)$. Naturalmente, $r(n)$ debe ser m\'ulitplo de $e$ pues cada vez que se anidan llamadas recursivas, la cantidad
+anidada es $e$. Por otro lado, toda otra llamada que no incremente el argumento en $k$ debe resolverse
+por decremento en $s$ eventualmente, dado que no existe otra posibilidad. Luego, $\alpha_n = 1 + r(n) - r(n)/e$ (se
+suma 1 pues hay que contabilizar tambi\'en la llamada original a $M$). Entonces,
+
+$$M(n) = n + \frac{r(n)}{e} \cdot k - \left(1 + \frac{(e-1) \cdot r(n)}{e}\right) \cdot s$$
+
+En consecuencia, el c\'omputo de $M(n)$ se reduce a calcular la cantidad de llamadas recursivas $r(n)$. 
+
 \subsection{C\'alculo de llamadas recursivas cuando $e = 2$}
+
+Calcular $r(n)$ en el caso m\'as general parece ser dif\'icil. No obstante, vamos a dar un argumento constructivo
+para calcular este valor cuando $e = 2$ y cuando $k = s + 1$. A continuaci\'on, generalizaremos la expresi\'on
+encontrada para abarcar valores de $k$ arbitrarios, y probaremos que dicha f\'ormula es correcta.
 
 \subsubsection{El caso f\'acil: $k = s + 1$}
 
+En este escenario, la funci\'on $M$ sigue un patr\'on de incremento lineal en la cantidad de llamadas recursivas a
+resolver, y en cada uno de estos pasos se procede sumando $k$ al argumento:
+
+$$M(n) = M^2(n + k) = M^3(n + 2k) = \cdots = M^{i+1}(n + ik)$$
+
+Este patr\'on termina cuando $n + ik > m$, lo que equivale a decir que $i$ es el m\'inimo n\'umero entero mayor
+que $(m - n) / k$. En otras palabras,
+
+$$i = \ceil{\frac{m-n+1}{k}}$$
+
+Entonces,
+
+\begin{eqnarray*}
+M(n)  &=& M^{i+1}(n + ik) \\
+      &=& M^i(n_0 = n + ik - s) \\
+      &=& M^i(n_1 = n + ik - s + (k-s)) \\
+      &\vdots& \\
+      &=& M^i(n_j = n + ik - s + j(k-s))
+\end{eqnarray*}
+
+en donde $n_0,\cdots,n_j \leq m$.
+
+Como $k = s + 1$, tenemos que $n_l = 1 + n_{l-1}$ (i.e., el argumento de $M^i$ se incrementar\'a
+de a 1). Pero esto s\'olo se da hasta llegar a $n_j = m$, en cuyo caso aparece un $s$ adicional restando (pues
+$m + k - s = m + 1 > m$):
+
+\begin{eqnarray*}
+M(n) &=& M^i(n_j = m = n + ik - s + j(k-s)) \\
+     &=& M^{i-1}(n + ik - s + (j+1)(k-s) - s = m + 1 - s)
+\end{eqnarray*}
+
+En este punto, se observa que se decrement\'o en 1 el exponente de M, lo cual implica que tenemos una llamada
+anidada menos a resolver. Este patr\'on de subir de a 1 el argumento hasta alcanzar a $m$ y luego sacar una
+llamada anidada va a seguir d\'andose hasta que eventualmente el exponente llegue a 0.\\
+
+A partir de este desarrollo, el c\'alculo de $r(n)$ lo podemos realizar por partes:
+
+\begin{itemize}
+  \item Por un lado, contar las llamadas que tenemos desde el principio hasta que alcanzar a $n_0$ (i.e.,
+        hasta que llegamos a superar a $m$). Esto not\'emoslo $r_0(n)$.
+  \item Despu\'es, contar las llamadas que tenemos en el incremento de $n_0$ hasta llegar a $m$ (not\'emoslo $r_1(n)$).
+  \item Luego, las llamadas involucradas en el incremento del par\'ametro, partiendo desde $m + 1 - s$, hasta bajar
+        en 1 el exponente (a lo que notaremos $r_2$, y no depende de $n$).
+  \item Una vez calculado esto, tenemos que $r(n) = r_0(n) + r_1(n) + (i-1) \cdot r_2$, dado que como vimos el ciclo
+        de incremento/decremento se da hasta agotar el exponente de M.
+\end{itemize}
+
+Tenemos que $r_0(n) = 2i$: por cada llamada a $M$, aparecen otras dos. Adem\'as,
+$$r_1(n) = 2  \cdot  \text{cantidad de n\'umeros entre} (n+ik-s) \text{ y } m$$
+
+dado que son las llamadas que tenemos hasta llegar por primera vez a $m$ para decremenetar el exponente. Entonces,
+
+$$r_1(n) = 2 \cdot (m  - (n + ik - s) + 1) = 2 \cdot (m - n - ik + s + 1)$$
+
+Finalmente, $r_2 = 2s$, dado que cada ciclo tiene $s$ n\'umeros: desde $m+1-s$ hasta $m$. Juntando todo,
+
+\begin{eqnarray*}
+r(n) &=& 2i + 2 \cdot (m - n - ik + s + 1) + 2 \cdot (i-1) \cdot s \\
+     &=& 2 \cdot \left[i + m - n - ik + s + 1 + is - s\right] \\
+     &=& 2 \cdot \left[i \cdot (s - k + 1) + m - n + s - s + 1 \right] \\
+     &=& 2 \cdot (m - n + 1)
+\end{eqnarray*}
+
+Siguiendo un razonamiento en esencia an\'alogo, puede extenderse este caso para valores de $e$ arbitrarios, tomando 
+$k = (e-1) \cdot s + 1$. En este escenario,
+
+$$r(n) = e \cdot (m - n + 1)$$
+
+Por supuesto, esta f\'ormula es v\'alida para cualquier $n \leq m$. Si $n > m$, se tiene que $r(n) = 0$.
+
 \subsubsection{Obteniendo una expresi\'on m\'as general}
+
+A partir del resultado anterior y de una observaci\'on cuidadosa de los valores de $r(n)$ para valores de $k$ 
+arbitrarios (siempre en el marco de $e = 2$), se conjetur\'o que
+
+$$r(n) = 2 \cdot \ceil{\frac{m - n + 1}{k-s}}$$
+
+A los efectos de probar su validez, notemos primero que $r(n)$ puede definirse recurrentemente:
+
+$$r(n) = r(n+k) + r(M(n+k)) + 2$$
+
+Esta igualdad se deriva instant\'aneamente de la definici\'on de $M$: la cantidad de llamadas recursivas para
+computar $M(n)$ son las utilizadas para computar $v = M(n+k)$ sumado a las utilizadas para computar $M(v)$. Por 
+cada uno de estos t\'erminos, se suma tambi\'en 1 dado que hay que adicionar la llamada original a $M$ en sendos
+casos.\\
+
+Luego, para probar la validez de la conjetura, basta con insertar la f\'ormula en esta expresi\'on y 
+comprobar la igualdad. Notemos antes lo siguiente:
+
+$$M(n) = n + \frac{r(n)}{2} \cdot k - \left(1 + \frac{r(n)}{2}\right) \cdot s 
+       = n + \left( \ceil{\frac{m-n+1}{k-s}} \right) \cdot k - \left(1 + \ceil{\frac{m-n+1}{k-s}} \right) \cdot s$$
+
+En lo que sigue, notemos $\gamma = \ceil{\frac{m-n-k+1}{k-s}}$. Luego, tenemos:
+
+\begin{itemize}
+    \item $r(n+k) = 2 \gamma$
+    \item $M(n+k) = n + (\gamma + 1) \cdot k - (\gamma + 1) \cdot s = n + (\gamma + 1) \cdot (k-s)$
+    \item $r(M(n+k)) = 2 \cdot \ceil{\frac{m - n - (\gamma + 1) \cdot (k-s) + 1}{k-s}}$
+\end{itemize}
+
+En consecuencia,
+
+\begin{eqnarray*}
+2 + r(n+k) + r(M(n+k)) &=& 2 + 2 \gamma + 2 \cdot \ceil{\frac{m - n - (\gamma + 1) \cdot (k-s) + 1}{k-s}} \\
+                       &=& 2 \cdot \left(1 + \gamma + \ceil{\frac{m - n - (\gamma + 1) \cdot (k-s) + 1}{k-s}} \right) \\
+                       &=& 2 \cdot \left(1 + \gamma + \ceil{\frac{m-n+1}{k-s} - (\gamma + 1)} \right) \\
+                       &=& 2 \cdot \left(1 + \gamma + \ceil{\frac{m-n+1}{k-s}} - \gamma - 1 \right) \\
+                       &=& 2 \cdot \ceil{\frac{m-n+1}{k-s}} \\
+                       &=& r(n)
+\end{eqnarray*}
+
+Por lo tanto, esto permite derivar una expresi\'on cerrada para $M(n)$ cuando $e = 2$, que adem\'as puede
+definirse para cualquier valor de $n \in \Nat$:
+
+$$M(n) = n - s + (k - s) \cdot \text{m\'ax}\left(0, \ceil{\frac{m-n+1}{k-s}}\right)$$
+
+Si instanciamos este resultado para el caso de $M_{91}$, tenemos:
+
+$$\Mc{n} = n - 10 + (11 - 10) \cdot \text{m\'ax}\left(0, \ceil{\frac{100-n+1}{11-10}}\right) = n - 10 + (100 - n + 1) = 91$$
+
+cuando $n \leq 100$. Cuando $n > 100$, se ve tambi\'en que $\Mc{n} = n - 10$.
 
 \end{document}
