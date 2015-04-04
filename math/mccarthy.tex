@@ -95,7 +95,7 @@ Sea $n \leq m$. Debe existir entonces un $c \in \Nat$ tal que
 
 $$M(n) = \Mi{m - k + i}{c}$$
 
-con $1 \leq i \leq k$. Esto corresponde al hecho sumar sucesivamente $k$ al argumento hasta alcanzar el m\'aximo
+con $1 \leq i \leq k$. Esto corresponde al hecho de sumar sucesivamente $k$ al argumento hasta alcanzar el m\'aximo
 valor posible antes de hacer el primer decremento por $s$. Desplegando la invocaci\'on m\'as interna, que 
 representa sumar una vez m\'as $k$ y agregar otras $e$ llamadas, se tiene
 
@@ -132,7 +132,7 @@ para algunos $\alpha_n, \beta_n \in \Nat$. Ahora bien, de cada $e$ llamadas, una
 implica que $\alpha_n = r(n) / e$, siendo $r(n)$ la cantidad de llamadas recursivas efectuadas al computar
 $M(n)$. Naturalmente, $r(n)$ debe ser m\'ulitplo de $e$ pues cada vez que se anidan llamadas recursivas, la cantidad
 anidada es $e$. Por otro lado, toda otra llamada que no incremente el argumento en $k$ debe resolverse
-por decremento en $s$ eventualmente, dado que no existe otra posibilidad. Luego, $\alpha_n = 1 + r(n) - r(n)/e$ (se
+por decremento en $s$ eventualmente, dado que no existe otra posibilidad. Luego, $\beta_n = 1 + r(n) - r(n)/e$ (se
 suma 1 pues hay que contabilizar tambi\'en la llamada original a $M$). Entonces,
 
 $$M(n) = n + \frac{r(n)}{e} \cdot k - \left(1 + \frac{(e-1) \cdot r(n)}{e}\right) \cdot s$$
