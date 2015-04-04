@@ -1,0 +1,131 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{amssymb}
+\usepackage{epsfig}
+\usepackage{latexsym}
+\usepackage{amstext}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amsthm}
+\usepackage{array}
+\usepackage{tikz}
+\usepackage{fancyvrb}
+\usepackage[a4paper, total={6.5in, 10in}]{geometry}
+\usepackage{gfsartemisia-euler}
+\usepackage[T1]{fontenc}
+\usepackage[latin1]{inputenc}
+\usepackage[spanish]{babel}
+
+\newtheorem{teo}{Teorema}
+
+\newcommand{\Mc}[1]{\ensuremath{M_{91}(#1)}}
+\newcommand{\Mci}[2]{\ensuremath{M_{91}^{#2}(#1)}}
+\newcommand{\Mi}[2]{\ensuremath{M^{#2}(#1)}}
+\newcommand{\Ind}[1]{\ensuremath{\mathbb{I}\{#1\}}}
+\newcommand{\Nat}{\ensuremath{\mathbb{N}}}
+
+
+\begin{document}
+\pagestyle{fancyplain}
+\cfoot{- \thepage/\pageref{LastPage} -}
+\lhead{}
+\chead{}
+\rhead{}
+\renewcommand{\headrulewidth}{0pt}
+
+\section{Introducci\'on}
+
+En este documento pretendemos analizar la funci\'on 91 de McCarthy a trav\'es de una generalizaci\'on
+de la misma. La idea de este enfoque es abstraer las constantes por variables y luego razonar
+anal\'iticamente sobre esta funci\'on generalizada con el objeto de poder encontrar expresiones
+cerradas para el valor de la funci\'on y para la cantidad de llamadas recursivas efectuadas para un
+argumento dado.
+
+\section{La funci\'on 91 de McCarthy}
+
+La funci\'on 91 de McCarthy se define matem\'aticamente como sigue:
+
+$$
+\Mc{n} =
+    \begin{cases}
+        n - 10            & \text{si } n > 100 \\
+        \Mc{\Mc{n+11}}  & \text{en otro caso}
+    \end{cases}
+$$
+
+Otra forma alternativa (y m\'as concisa) de expresarla es as\'i:
+
+$$\Mc{n} = (n - 10) \cdot \Ind{n > 100} + \Mci{n+11}{2} \cdot \Ind{n \leq 100}$$
+
+En esta forma,
+\begin{itemize}
+    \item $\Ind{p}$ es un indicador booleano que vale 1 si y s\'olo si el predicado $p$ es verdadero, y
+    \item $\Mci{n}{i} = \underbrace{M_{91}(M_{91}(\dots \Mc{n}}_{i \text{ veces}}\dots))$.
+\end{itemize}
+
+\subsection{Generalizaci\'on}
+
+Podemos obtener una versi\'on generalizada $M = M_{m,k,s,e}$ de la funci\'on 91 de McCarthy abstrayendo cada constante en
+una variable distinta:
+
+$$M(n) = (n - s) \cdot \Ind{n > m} + \Mi{n+k}{e} \cdot \Ind{n \leq m}$$
+
+Es claro entonces que $M_{91}$ es un caso particular de $M$, dado que podemos generarla mediante la instanciaci\'on
+$M_{91} = M_{100,11,10,2}$.
+
+\section{An\'alisis}
+
+\subsection{La relaci\'on entre $k$, $s$ y $e$}
+
+El primer interrogante que surge es bajo qu\'e condiciones la funci\'on $M$ est\'a bien definida. Esto es, c\'omo debe
+ser la relaci\'on entre las distintas variables de forma tal que $M(n)$ tenga un valor num\'erico y no haya divergencia
+computacional al intentar calcular dicho valor (hecho que notaremos con el s\'imbolo $\bot$).
+Para ello probaremos el siguiente resultado:
+
+\begin{teo}
+Si $k \leq (e - 1) \cdot s$, se tiene que $M(n) = \bot$ para cualquier $n \leq m$.
+\end{teo}
+
+\begin{proof}
+Sea $n \leq m$. Debe existir entonces un $c \in \Nat$ tal que 
+
+$$M(n) = \Mi{m - k + i}{c}$$
+
+con $1 \leq i \leq k$. Esto corresponde al hecho sumar sucesivamente $k$ al argumento hasta alcanzar el m\'aximo
+valor posible antes de hacer el primer decremento por $s$. Desplegando la invocaci\'on m\'as interna, que 
+representa sumar una vez m\'as $k$ y agregar otras $e$ llamadas, se tiene
+
+$$\Mi{m - k + i}{c} = \Mi{m + i}{c + e - 1}$$
+
+Sea $e_0 = \text{m\'in} \, \left\{ a \in \Nat \, / \, m + i - as \leq m \right\}$. Entonces,
+
+\begin{eqnarray*}
+\Mi{m - k + i}{c} &=& \Mi{m + i}{c + e - 1} \\
+                  &=& \Mi{m + i - e_0 s}{c + e - 1 - e_0}
+\end{eqnarray*}
+Como sabemos que $k \leq (e-1) \cdot s$, $m + i \leq m + k \leq m + (e-1) \cdot s$. Substrayendo $(e-1)\cdot s$ de
+ambos extremos, tenemos que $m + i - (e-1)\cdot s \leq m$. De esto sigue que $e_0 \leq e-1$, pues por
+definici\'on es el menor n\'umero natural con dichas propiedades. Luego,
+
+$$c + e - 1 - e_0 \geq c + e - 1 - (e-1) = c$$
+
+El mismo razonamiento aplica para el argumento $m + i - e_0 s \leq m$. De esto se concluye que la cantidad de 
+llamadas a $M$ es creciente, con lo cual $M(n) = \bot$.
+\end{proof}
+
+La interpretaci\'on fundamental de este resultado es que $k$ debe valer por lo menos $(e-1)\cdot s + 1$ para que
+$M$ est\'e bien definida. En el caso de $M_{91}$, observamos que $k$ toma el m\'inimo valor posible, pues
+$k = 11 = 1 \cdot 10 + 1 = (e - 1) \cdot s + 1$.
+
+\subsection{C\'alculo del valor de la funci\'on}
+
+\subsection{C\'alculo de llamadas recursivas cuando $e = 2$}
+
+\subsubsection{El caso f\'acil: $k = s + 1$}
+
+\subsubsection{Obteniendo una expresi\'on m\'as general}
+
+\end{document}
